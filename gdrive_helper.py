@@ -12,18 +12,22 @@ def drive_download(url):
     # Scrape gdrive file id
     data_ids = soup.find_all(attrs={"data-id": True})
 
-    # With file id, generate download url
-    first_data_id = data_ids[0]['data-id']
-    complete_url = "https://drive.google.com/u/0/uc?id=" + first_data_id + "&export=download"
+    for data in data_ids:
 
-    # With download url, scrape direct download link and download it
-    response = requests.get(complete_url.strip(), headers=headers, timeout=10)
-    soup = BeautifulSoup(response.text, features="lxml")
+        file_name = data.text
+        data_id = data['data-id']
 
-    form = soup.select("#downloadForm")
-    link = form[0]['action']
+        # With file id, generate download url
+        complete_url = "https://drive.google.com/u/0/uc?id=" + data_id + "&export=download"
 
-    with open("test.mkv", "wb") as file:
-        response = requests.get(link)
-        print("Downloading file...")
-        file.write(response.content)
+        # With download url, scrape direct download link and download it
+        response = requests.get(complete_url.strip(), headers=headers, timeout=10)
+        soup = BeautifulSoup(response.text, features="lxml")
+
+        form = soup.select("#downloadForm")
+        link = form[0]['action']
+
+        with open(file_name, "wb") as file:
+            print("Downloading " + file_name + "...")
+            response = requests.get(link)
+            file.write(response.content)
